@@ -8,6 +8,7 @@ import java.util.List;
 
 public class Kmp {
 
+    //  longest proper prefix which is also a suffix
     private List<Integer> lps(String pattern){
         Integer[] lps = new Integer[pattern.length()];
         Arrays.fill(lps, 0);

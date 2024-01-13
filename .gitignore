@@ -1,5 +1,5 @@
 .idea/
 *.iml
 out/
-practice/
 .DS_Store
+**/*.class
