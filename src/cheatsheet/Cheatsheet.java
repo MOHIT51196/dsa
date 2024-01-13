@@ -220,6 +220,23 @@ public class Cheatsheet {
         return  arr;
     }
 
+    // search
+    boolean search(List<Integer> arr, final int val, final int start, final int end) {
+        if(start <= end) {
+            final int mid = (start + end) / 2;
+            System.out.println("start, end = " + start + "," + end + " | mid = " + mid);
+            final int midValue = arr.get(mid);
+            if (val == midValue) return true;
+            else if (val < midValue) return search(arr, val, start, mid - 1);
+            else if (val > midValue) return search(arr, val, mid + 1, end);
+        }
+        return false;
+    }
+    boolean binarySearch(List<Integer> arr, final int val) {
+        selectionSort(arr); // any sort will work
+        return search(arr, val, 0, arr.size() - 1);
+    }
+
     // kadane algorithm - max sum subarray
     int kadaneAlgorithm(final List<Integer> arr) {
         int maxSum = Integer.MIN_VALUE;
@@ -573,12 +590,107 @@ public class Cheatsheet {
         return max;
     }
 
+    /* longest common subsequence
+    * DP solution with 2d array
+     */
+
+    int lcs(final String str1, final String str2, int i, int j, int[][] dp) {
+        if(i >= str1.length() || j >= str2.length()) return 0;
+
+        if(dp[i][j] == -1) {
+            if(str1.charAt(i) == str2.charAt(j)) dp[i][j] = 1 + lcs(str1, str2, i + 1, j + 1, dp);
+            else dp[i][j] = Math.max(
+                    lcs(str1, str2, i + 1, j, dp),
+                    lcs(str1, str2, i, j + 1, dp)
+            );
+        }
+        return dp[i][j];
+    }
+     int longestCommonSubsequence(final String str1, final String str2) {
+        int[][] dp = new int[str1.length()][str2.length()];
+        for(var dup : dp) Arrays.fill(dup, -1);
+
+        return lcs(str1, str2, 0, 0, dp);
+     }
+
+     /* Generate paranthesis
+     * if n =2 then generate all possible combinations of enclosed parathesis
+     * (()), ()()
+     *
+     * VERY TYPICAL PROBLEM
+      */
+    Stack<Character> stack = new Stack<>();
+    List<String> result = new ArrayList<>();
+    void dfs(int n, int openCount, int closeCount) {
+
+        if(stack.size() == 2 * n) result.add(String.join("", stack.stream().map(Object::toString).toList()));
+
+        if(openCount < n) {
+            stack.add('(');
+            dfs(n, openCount + 1, closeCount);
+            // cleanup
+            stack.pop();
+        }
+
+        if(closeCount < openCount) {
+            stack.add(')');
+            dfs(n, openCount, closeCount + 1);
+            // cleanup
+            stack.pop();
+        }
+    }
+    List<String> generateParathesis(int n) {
+        dfs(n, 0, 0);
+        return result;
+    }
+
+    /* N Queens
+    * Look for a place which doesnot exist in +ve, -ve diag or in column of existing queen
+    * Postive diag relation : row - col is constant
+    * Negative diag relation : row + col is constant
+     */
+
+    List<List<String>> resBoard = new LinkedList<>();
+    List<Integer> cols = new LinkedList<>();
+    List<Integer> positiveDiag = new LinkedList<>();
+    List<Integer> negativeDiag = new LinkedList<>();
+
+    void dfs(char[][] board, int row) {
+        if(row >= board.length) {
+            resBoard.add(Arrays.stream(board).map(String::new).toList());
+        }
+        for (int col = 0; col < board.length; col++) {
+            if(cols.contains(col) || positiveDiag.contains(row - col) || negativeDiag.contains(row + col))
+                continue;
+
+            board[row][col] = 'Q';
+            cols.add(col);
+            positiveDiag.add(row - col);
+            negativeDiag.add(row + col);
+
+            dfs(board, row + 1);
+
+            // cleanup for further rows
+            board[row][col] = '.';
+            cols.remove(Integer.valueOf(col)); // to avoid index removal - wrap with Integer
+            positiveDiag.remove(Integer.valueOf(row - col));
+            negativeDiag.remove(Integer.valueOf(row + col));
+        }
+    }
+    List<List<String>> nQueens(int n) {
+        char[][] board = new char[n][n];
+        for(var b: board) Arrays.fill(b, '.');
+        dfs(board, 0);
+        return resBoard;
+    }
+
+
     public static void main(String[] args) {
         var pg = new Cheatsheet();
-//        var out = pg.isJumpPossible(new ArrayList<>(
-//                Arrays.asList(1, 5, 2,  3)
-//        ));
-        var out = pg.isStringPalindrome("Naman");
+        var out = pg.binarySearch(new ArrayList<>(
+                Arrays.asList(1, 5, 2,  3, 322, -33, 3, 0)
+        ), 322);
+//        var out = pg.isStringPalindrome("Naman");
         System.out.println(out);
     }
 }
